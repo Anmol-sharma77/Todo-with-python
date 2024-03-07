@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>To-Do Webpage</title>
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 80%;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            margin-top: 20px;
+        }
+
+        h1 {
+            color: #333;
+        }
+
+        .input-container {
+            display: flex;
+            flex-direction: column;
+            margin-bottom: 1rem;
+            width: 100%;
+        }
+
+        .input-container input,
+        .input-container textarea,
+        .input-container select {
+            margin-bottom: 0.5rem;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+
+        .input-container button {
+            padding: 10px 15px;
+            border: none;
+            border-radius: 5px;
+            background-color: #007bff;
+            color: #fff;
+            cursor: pointer;
+        }
+
+        .input-container button:hover {
+            background-color: #0056b3;
+        }
+
+        /* Modal styles */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 1;
+            overflow: auto;
+        }
+
+        .modal-content {
+            background-color: #fefefe;
+            margin: 15% auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80%;
+            border-radius: 10px;
+        }
+
+        /* Close button */
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+        }
+
+        .close:hover,
+        .close:focus {
+            color: black;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        .task-partitions {
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+            margin-bottom: 1rem;
+        }
+
+        .partition {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 1rem;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            cursor: move;
+            width: 30%;
+        }
+
+        .partition h2 {
+            margin-bottom: 0.5rem;
+        }
+
+        .pending {
+            background-color: #ddd;
+        }
+
+        .in-progress {
+            background-color: #ffea00;
+        }
+
+        .completed {
+            background-color: #4caf50;
+        }
+
+        .task-list {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            width: 100%;
+        }
+
+        .edit-btn {
+            margin-top: 0.5rem;
+            padding: 0.25rem 0.5rem;
+            border-radius: 5px;
+            background-color: #36f446;
+            color: white;
+            cursor: pointer;
+            border: none;
+        }
+
+        .edit-btn:hover {
+            background-color: #4caf50;
+        }
+
+        .task-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 1rem;
+            border: 1px solid #ff0000;
+            border-radius: 5px;
+            width: 60%;
+            word-break: break-all;
+        }
+
+        .task-item.pending {
+            background-color: #ddd;
+        }
+
+        .task-item.in-progress {
+            background-color: #ffea00;
+        }
+        .date{
+            width: 30%;
+        }
+        .task-item.completed {
+            background-color: #4caf50;
+        }
+
+        .delete-btn {
+            margin-top: 0.5rem;
+            padding: 0.25rem 0.5rem;
+            border-radius: 5px;
+            background-color: #f44336;
+            color: white;
+            cursor: pointer;
+            border: none;
+        }
+
+        .delete-btn:hover {
+            background-color: #d32f2f;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>To-Do List</h1>
+        <!-- Add Task button -->
+        <button id="add-task-btn-modal">Add Task</button>
+        <!-- Modal -->
+        <div id="task-modal" class="modal">
+            <!-- Modal content -->
+            <div class="modal-content">
+                <span class="close">&times;</span>
+                <div class="input-container">
+                    <input type="text" id="task-title" placeholder="Title" required />
+                    <textarea id="task-description" placeholder="Description" required></textarea>
+                    <label>Start Date:</label>
+                    <input type="date" class="date" id="task-date" required />
+                    <label>End Date:</label>
+                    <input type="date" class="date" id="task-end-date" placeholder="End Date" required />
+                    <span>
+                        <label for="">From</label>
+                        <input type="time" id="fromTime" name="" >
+                        <label for="">End</label>
+                        <input type="time" id="endTime" name="" >
+                    </span>
+                    <button id="add-task-btn">Add Task</button>
+                    <button id="update-task-btn" style="display: none;">Update Task</button>
+                </div>
+            </div>
+        </div>
+        <!-- Existing content -->
+        <div class="task-partitions">
+            <div class="partition pending" data-partition="pending">
+                <h2>pending (0)</h2>
+            </div>
+            <div class="partition in-progress" data-partition="in-progress">
+                <h2>in progress (0)</h2>
+            </div>
+            <div class="partition completed" data-partition="completed">
+                <h2>completed (0)</h2>
+            </div>
+        </div>
+        <div class="task-list" id="task-list"></div>
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            gettodo(function (err, todo) {
+                if (!err && todo.length > 0) {
+                    console.log(todo);
+                    todo.forEach((data) => {
+                        addtodom(data);
+                    })
+                }
+            });
+            const addTaskBtn = document.getElementById('add-task-btn');
+            const editTaskBtn = document.getElementById('update-task-btn');
+            const taskTitleInput = document.getElementById('task-title');
+            const taskDescriptionInput = document.getElementById('task-description');
+            const taskDateInput = document.getElementById('task-date');
+            const taskendInput = document.getElementById('task-end-date');
+            const starttime=document.getElementById("fromTime");
+            const endtime=document.getElementById("endTime");
+            const taskList = document.getElementById('task-list');
+            const partitions = document.querySelectorAll('.partition');
+            const addTaskBtnModal = document.getElementById('add-task-btn-modal');
+            const modal = document.getElementById('task-modal');
+            const closeBtn = document.querySelector('.close');
+            addTaskBtnModal.addEventListener('click', function () {
+                modal.style.display = 'block';
+            });
+
+            closeBtn.addEventListener('click', function () {
+                modal.style.display = 'none';
+            });
+
+            window.addEventListener('click', function (event) {
+                if (event.target == modal) {
+                    modal.style.display = 'none';
+                }
+            });
+            let taskId = 0;
+            addTaskBtn.addEventListener('click', function () {
+                const title = taskTitleInput.value.trim();
+                const description = taskDescriptionInput.value.trim();
+                const date = taskDateInput.value;
+                if (title && description && date) {
+                    data = { title: title, description: description, date: date,enddate:taskendInput.value,starttime:starttime.value,endtime:endtime.value};
+                    fetch("/todo", {
+                        method: 'POST',
+                        headers: { 'content-type': 'application/json' },
+                        body: JSON.stringify(data),
+                    }).then((response) => {
+                        return response.json()
+                    }).then((data) => {
+                        data = data.todo;
+                        console.log("Data sent to server");
+                        console.log(data);
+                        addtodom(data);
+                        taskTitleInput.value = '';
+                        taskDescriptionInput.value = '';
+                        taskDateInput.value = '';
+                        addTaskBtn.innerHTML = "Add Task";
+                    }).catch(function (err) { console.error(err) });
+                }
+                else {
+                    alert("Please fill all fields");
+                }
+            });
+            function addtodom(data) {
+                const task = createTaskElement(data.title, data.discription, data.date, data.id,data.enddate,data.starttime,data.endtime);
+                let partition = partitions[0];
+                console.log(data.status);
+                if (data.status == 'pending') {
+                    const partition = partitions[0];
+                } else if (data.status == 'completed') {
+                    partition = partitions[2]
+                }
+                else {
+                    partition = partitions[1]
+                }
+                partition.appendChild(task);
+                updateTaskCount(partition);
+            }
+            function gettodo(callback) {
+                fetch('/todo').then((response) => {
+                    if (response.status == 200)
+                        return response.json();
+                    else {
+                        throw new error('something went wrong');
+                    }
+                }).then((data) => {
+                    callback(null, data)
+                }).catch((error) => {
+                    console.log(error);
+                    callback(error, null);
+                })
+            }
+            function createTaskElement(title, description, date, id,enddate,from,to) {
+                const taskItem = document.createElement('div');
+                taskItem.classList.add('task-item');
+                taskItem.dataset.id = id;
+                taskItem.innerHTML = `
+           <h3>${title}</h3>
+           <p>${description}</p>
+           <span>
+           <p class="task-date">start: ${date}</p>
+           <p class='end-date'>end:${enddate}</p>
+           </span>
+           <span>
+            <p class='fromtime'>From : ${from}Hrs</p>
+            <p class='totime'>To : ${to}Hrs</p>
+            <span>
+            <button class="edit-btn">Edit</button>
+           <button class="delete-btn">Delete</button>
+       `;
+                taskItem.querySelector('.delete-btn').addEventListener('click', function () {
+                    fetch('/todo', {
+                        method: 'DELETE',
+                        headers: {
+                            "Content-Type": "application/json"
+                        },
+                        body: JSON.stringify({ 'id': id })
+                    }).then((response) => {
+                        if (response.status == 200) {
+                            let par = taskItem.parentNode
+                            taskItem.remove();
+                            updateTaskCount(par);
+                        }
+                    }).catch((error) => {
+                        console.log(error);
+                    })
+                });
+                taskItem.querySelector('.edit-btn').addEventListener('click', function () {
+                    taskTitleInput.value = title;
+                    taskDescriptionInput.value = description;
+                    taskDateInput.value = date;
+                    taskendInput.value=enddate;
+                    starttime.value=from;
+                    endtime.value=to;
+                    addTaskBtn.style.display = 'none';
+                    editTaskBtn.style.display = 'block';
+                    modal.style.display = 'block';
+                    editTaskBtn.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        updateTask(taskTitleInput.value,taskDescriptionInput.value,taskDateInput.value,taskendInput.value,starttime.value,endtime.value,id,(err) => {
+                            if (err) {
+                                console.log(err);
+                            } else {
+                                const taskItem = document.querySelector(`.task-item[data-id="${id}"]`);
+                                const h3Element = taskItem.querySelector('h3');
+                                h3Element.textContent = taskTitleInput.value;
+                                const pElements = taskItem.querySelectorAll('p');
+                                console.log(pElements);
+                                if (pElements.length > 0) {
+                                    pElements[0].textContent = taskDescriptionInput.value;
+                                }
+                                const taskDateElement = taskItem.querySelector('.task-date');
+                                const enddate = taskItem.querySelector('.end-date');
+                                const startime = taskItem.querySelector('.fromtime');
+                                const entime = taskItem.querySelector('.totime');
+                                taskDateElement.textContent = 'start: ' + taskDateInput.value;
+                                enddate.textContent='End :' + taskendInput.value;
+                                startime.textContent='From :' + starttime.value;
+                                entime.textContent='To :'+ endtime.value;
+                                console.log("Task updated successfully.");
+                                modal.style.display = 'none';
+                                taskTitleInput.value = '';
+                                taskDescriptionInput.value = '';
+                                taskDateInput.value = '';
+                                enddate.value= "";
+                                starttime.value='';
+                                endtime.value='';
+                            }
+                        });
+                    })
+                    updateTaskCount(taskItem.parentNode);
+                });
+                makeTaskDraggable(taskItem);
+                return taskItem;
+            }
+
+            function makeTaskDraggable(taskItem) {
+                taskItem.draggable = true;
+                taskItem.addEventListener('dragstart', function (event) {
+                    event.dataTransfer.setData('text/plain', event.target.dataset.id);
+                });
+            }
+
+            partitions.forEach(partition => {
+                partition.addEventListener('dragover', function (event) {
+                    event.preventDefault();
+                });
+
+                partition.addEventListener('drop', function (event) {
+                    event.preventDefault();
+                    const taskId = event.dataTransfer.getData('text/plain');
+                    console.log(taskId);
+                    const taskItem = document.querySelector(`.task-item[data-id="${taskId}"]`);
+                    console.log(partition);
+                    status = partition.getAttribute('data-partition');
+                    fetch('/todo', {
+                        method: 'PATCH',
+                        headers: { 'content-type': 'application/json' },
+                        body: JSON.stringify({ id: taskId, status: status })
+                    }).then((response) => {
+                        if (response.status != 200) {
+                            throw new Error('Something went wrong!');
+                        }
+                        const sourcePartition = taskItem.parentNode;
+                        if (partition !== sourcePartition) {
+                            partition.appendChild(taskItem);
+                            updateTaskCount(partition);
+                            updateTaskCount(sourcePartition);
+                        }
+                    }).catch((err) => {
+                        console.log(err);
+                    })
+                });
+            });
+            function updateTask(title, description, date,end,from,endtime,id,callback) {
+                fetch('/todo', {
+                    method: 'PUT',
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ 
+                        title: title, 
+                        description: description, 
+                        date: date,
+                        enddate:end,
+                        starttime:from,
+                        endtime:endtime,
+                        id: id 
+                    })
+                }).then((response) => {
+                    if (response.status == 200) {
+                        callback();
+                        return;
+                    }
+                    else {
+                        callback(new Error("Error Updating Task"));
+                    }
+                })
+            }
+            function updateTaskCount(partition) {
+                const taskCount = partition.querySelectorAll('.task-item').length;
+                partition.querySelector('h2').textContent = partition.dataset.partition.replace('-', ' ') + ` (${taskCount})`;
+            }
+        });
+    </script>
+</body>
+
+</html>
